@@ -79,7 +79,7 @@ public class ReminderBehaviorTest
         suppliedCasts = 0;
         refresh();
         assertTrue(plugin.shouldShowWarning());
-        assertEquals(MissingCondition.ARCEUUS_SPELLBOOK, plugin.getCurrentMissingCondition());
+        assertEquals(MissingCondition.SPELLBOOK_CONFIRMATION, plugin.getCurrentMissingCondition());
         assertEquals("Confirm spellbook : Ancients", plugin.getReminderLongText());
         assertEquals("Ancients!", plugin.getReminderShortText());
         plugin.confirmWarning(plugin.getWarningVersion());
@@ -165,7 +165,7 @@ public class ReminderBehaviorTest
     }
 
     @Test
-    public void switchingToArceuusRevealsMissingRunesEvenWithoutBook()
+    public void switchingToArceuusAsksConfirmationBeforeShowingMissingSupplies()
     {
         pouchPresent = true;
         bookPresent = false;
@@ -176,10 +176,156 @@ public class ReminderBehaviorTest
         when(client.getVarbitValue(VarbitID.SPELLBOOK)).thenReturn(3);
         refresh();
         assertTrue(plugin.shouldShowWarning());
+        assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
+        assertEquals("Arceuus!", plugin.getReminderShortText());
+        long confirmationVersion = plugin.getWarningVersion();
+        plugin.confirmWarning(confirmationVersion);
         assertEquals("Missing thrall runes", plugin.getReminderLongText());
+        plugin.confirmWarning(confirmationVersion);
+        assertTrue(plugin.shouldShowWarning());
+        refresh();
+        assertEquals(MissingCondition.THRALL_RUNES, plugin.getCurrentMissingCondition());
         suppliedCasts = 10;
         refresh();
         assertEquals(MissingCondition.BOOK_OF_THE_DEAD, plugin.getCurrentMissingCondition());
+    }
+
+    @Test
+    public void arceuusConfirmationKeepsSupplyChecksSeparateAndDoesNotLoop()
+    {
+        pouchPresent = true;
+        bookPresent = false;
+        refresh();
+        assertEquals(MissingCondition.SPELLBOOK_CONFIRMATION, plugin.getCurrentMissingCondition());
+        plugin.confirmWarning(plugin.getWarningVersion());
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals(MissingCondition.BOOK_OF_THE_DEAD, plugin.getCurrentMissingCondition());
+        plugin.confirmWarning(plugin.getWarningVersion());
+        refresh();
+        refresh();
+        assertFalse(plugin.shouldShowWarning());
+        suppliedCasts = 0;
+        refresh();
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals(MissingCondition.THRALL_RUNES, plugin.getCurrentMissingCondition());
+        verify(notifier, times(3)).notify(eq(config.notification()), anyString());
+    }
+
+    @Test
+    public void bookAutomaticallyConfirmsArceuusWithOrWithoutPouch()
+    {
+        for (boolean carryPouch : new boolean[] {false, true})
+        {
+            pouchPresent = carryPouch;
+            suppliedCasts = 10;
+            refresh();
+            assertFalse(plugin.shouldShowWarning());
+            suppliedCasts = 0;
+            refresh();
+            assertTrue(plugin.shouldShowWarning());
+            assertEquals(MissingCondition.THRALL_RUNES, plugin.getCurrentMissingCondition());
+        }
+    }
+
+    @Test
+    public void withdrawingBookResolvesArceuusPromptButStillChecksRunes()
+    {
+        pouchPresent = true;
+        for (int casts : new int[] {0, 10})
+        {
+            suppliedCasts = casts;
+            bookPresent = false;
+            refresh();
+            assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
+            long oldVersion = plugin.getWarningVersion();
+            bookPresent = true;
+            refresh();
+            plugin.confirmWarning(oldVersion);
+            assertEquals(casts == 0, plugin.shouldShowWarning());
+            assertEquals(casts == 0 ? MissingCondition.THRALL_RUNES : MissingCondition.NONE,
+                plugin.getCurrentMissingCondition());
+        }
+        bookPresent = false;
+        refresh();
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
+    }
+
+    @Test
+    public void fastPouchBankingRearmsArceuusEvenAfterSupplyWarningWasDismissed()
+    {
+        pouchPresent = true;
+        bookPresent = false;
+        refresh();
+        long oldVersion = plugin.getWarningVersion();
+        plugin.confirmWarning(oldVersion);
+        plugin.confirmWarning(plugin.getWarningVersion());
+        assertFalse(plugin.shouldShowWarning());
+        pouchPresent = false;
+        inventoryChanged();
+        pouchPresent = true;
+        inventoryChanged();
+        plugin.onGameTick(new GameTick());
+        plugin.confirmWarning(oldVersion);
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
+        refresh();
+        verify(notifier, times(3)).notify(eq(config.notification()), anyString());
+    }
+
+    @Test
+    public void arceuusPromptHonorsTogglesAndStaysHiddenWhenSuppliesAreDisabled()
+    {
+        pouchPresent = true;
+        bookPresent = false;
+        when(config.notifyOnMissingBook()).thenReturn(false);
+        when(config.notifyOnMissingRunes()).thenReturn(false);
+        when(config.checkCarriedRunePouch()).thenReturn(false);
+        refresh();
+        assertFalse(plugin.shouldShowWarning());
+        when(config.checkCarriedRunePouch()).thenReturn(true);
+        when(config.notifyOnWrongSpellbook()).thenReturn(false);
+        refresh();
+        assertFalse(plugin.shouldShowWarning());
+        when(config.notifyOnWrongSpellbook()).thenReturn(true);
+        refresh();
+        assertTrue(plugin.shouldShowWarning());
+        plugin.confirmWarning(plugin.getWarningVersion());
+        refresh();
+        suppliedCasts = 0;
+        refresh();
+        assertFalse(plugin.shouldShowWarning());
+        verify(notifier, times(1)).notify(eq(config.notification()), anyString());
+    }
+
+    @Test
+    public void returningToArceuusRequiresNewPouchConfirmation()
+    {
+        pouchPresent = true;
+        bookPresent = false;
+        refresh();
+        plugin.confirmWarning(plugin.getWarningVersion());
+        when(client.getVarbitValue(VarbitID.SPELLBOOK)).thenReturn(1);
+        refresh();
+        assertEquals("Confirm spellbook : Ancients", plugin.getReminderLongText());
+        plugin.confirmWarning(plugin.getWarningVersion());
+        when(client.getVarbitValue(VarbitID.SPELLBOOK)).thenReturn(3);
+        refresh();
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
+    }
+
+    @Test
+    public void restartingClearsArceuusConfirmation() throws Exception
+    {
+        pouchPresent = true;
+        bookPresent = false;
+        refresh();
+        plugin.confirmWarning(plugin.getWarningVersion());
+        plugin.shutDown();
+        plugin.startUp();
+        assertTrue(plugin.shouldShowWarning());
+        assertEquals("Confirm spellbook : Arceuus", plugin.getReminderLongText());
     }
 
     @Test

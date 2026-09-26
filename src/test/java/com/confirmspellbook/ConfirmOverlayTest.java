@@ -37,7 +37,7 @@ public class ConfirmOverlayTest
         when(client.getGameState()).thenReturn(GameState.LOGGED_IN);
         when(plugin.shouldShowWarning()).thenReturn(true);
         when(plugin.getWarningVersion()).thenReturn(7L);
-        when(plugin.getCurrentMissingCondition()).thenReturn(MissingCondition.ARCEUUS_SPELLBOOK);
+        when(plugin.getCurrentMissingCondition()).thenReturn(MissingCondition.SPELLBOOK_CONFIRMATION);
         when(plugin.getReminderLongText()).thenReturn("Confirm spellbook : Ancients");
         when(plugin.getReminderShortText()).thenReturn("Ancients!");
         // Use actual Guice construction: the renderer and mouse listener must share one overlay.
@@ -136,7 +136,7 @@ public class ConfirmOverlayTest
             MissingCondition.BOOK_OF_THE_DEAD, MissingCondition.THRALL_RUNES })
         {
             when(plugin.getReminderLongText()).thenReturn(condition.getLongText());
-            when(plugin.getCurrentMissingCondition()).thenReturn(MissingCondition.ARCEUUS_SPELLBOOK);
+            when(plugin.getCurrentMissingCondition()).thenReturn(MissingCondition.SPELLBOOK_CONFIRMATION);
             Point oldButton = render("transition-" + condition);
             when(plugin.getCurrentMissingCondition()).thenReturn(condition);
             assertFalse(overlay.confirmAt(oldButton));
@@ -167,6 +167,8 @@ public class ConfirmOverlayTest
         assertTrue(overlay.confirmAt(render("confirm-standard")));
         when(plugin.getReminderLongText()).thenReturn("Confirm spellbook : Lunar");
         assertTrue(overlay.confirmAt(render("confirm-lunar")));
+        when(plugin.getReminderLongText()).thenReturn("Confirm spellbook : Arceuus");
+        assertTrue(overlay.confirmAt(render("confirm-arceuus")));
         when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.SHORT_TEXT);
         when(plugin.getReminderShortText()).thenReturn("Ancients!");
         render("confirm-ancients-short");
@@ -174,6 +176,8 @@ public class ConfirmOverlayTest
         render("confirm-standard-short");
         when(plugin.getReminderShortText()).thenReturn("Lunar!");
         assertTrue(overlay.confirmAt(render("confirm-lunar-short")));
+        when(plugin.getReminderShortText()).thenReturn("Arceuus!");
+        assertTrue(overlay.confirmAt(render("confirm-arceuus-short")));
     }
 
     private Point render(String filename) throws Exception

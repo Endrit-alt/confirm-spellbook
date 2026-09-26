@@ -2,6 +2,6 @@
 
 ![Confirm Spellbook icon](icon.png)
 
-Asks you to confirm your spellbook when you take out a rune pouch or the Book of the Dead while on Standard, Ancients, or Lunar.
+Asks you to confirm your spellbook when you take out a rune pouch. Carrying the Book of the Dead already confirms Arceuus; on other spellbooks, the book also triggers a confirmation.
 
 On Arceuus, reminds you about a missing thrall book or missing thrall runes.

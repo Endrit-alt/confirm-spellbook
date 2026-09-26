@@ -3,7 +3,7 @@ package com.confirmspellbook;
 public enum MissingCondition
 {
     BOOK_OF_THE_DEAD("Missing Book of the Dead", "Book!"),
-    ARCEUUS_SPELLBOOK("Not on Arceuus spellbook", "Spellbook!"),
+    SPELLBOOK_CONFIRMATION("Confirm spellbook", "Spellbook!"),
     THRALL_RUNES("Missing thrall runes", "Runes!"),
     NONE("", "");
 

@@ -71,6 +71,7 @@ public class ConfirmSpellbookPlugin extends Plugin
     private boolean hasRunePouch = false;
     private boolean carriedItemsKnown = false;
     private boolean acknowledgmentNeedsReset = false;
+    private boolean arceuusSpellbookConfirmed = false;
     private int spellbook = -1;
     private int warningSpellbook = -1;
     private volatile boolean warningShown = false;
@@ -208,7 +209,12 @@ public class ConfirmSpellbookPlugin extends Plugin
 
     private void checkSpellbook()
     {
-        spellbook = client.getVarbitValue(VarbitID.SPELLBOOK);
+        int currentSpellbook = client.getVarbitValue(VarbitID.SPELLBOOK);
+        if (spellbook != currentSpellbook)
+        {
+            arceuusSpellbookConfirmed = false;
+        }
+        spellbook = currentSpellbook;
         hasArceuusSpellbook = spellbook == ARCEUUS_SPELLBOOK;
     }
 
@@ -225,9 +231,15 @@ public class ConfirmSpellbookPlugin extends Plugin
         if (carriedItemsKnown && ((!hasBookOfTheDead && bookPresent) || (!hasRunePouch && pouchPresent)))
         {
             acknowledgmentNeedsReset = true;
+            arceuusSpellbookConfirmed = false;
             // A click queued for the previous loadout must not acknowledge the new one.
             warningVersion++;
             overlay.clearConfirmTarget();
+        }
+        // The book itself confirms Arceuus. If it is removed later, ask again.
+        if (bookPresent || !pouchPresent)
+        {
+            arceuusSpellbookConfirmed = false;
         }
         hasBookOfTheDead = bookPresent;
         hasRunePouch = pouchPresent;
@@ -236,13 +248,18 @@ public class ConfirmSpellbookPlugin extends Plugin
 
     private void evaluateWarningState()
     {
-        // Confirm an intentional non-Arceuus loadout before asking for thrall supplies.
+        // Confirm the spellbook first; carrying the book already confirms Arceuus.
         boolean checkCarriedItems = config.checkCarriedRunePouch();
+        if (!checkCarriedItems || !config.notifyOnWrongSpellbook())
+        {
+            arceuusSpellbookConfirmed = false;
+        }
         MissingCondition missingCondition;
         if (checkCarriedItems && (hasBookOfTheDead || hasRunePouch)
-            && !hasArceuusSpellbook && config.notifyOnWrongSpellbook())
+            && (!hasArceuusSpellbook || (!hasBookOfTheDead && !arceuusSpellbookConfirmed))
+            && config.notifyOnWrongSpellbook())
         {
-            missingCondition = MissingCondition.ARCEUUS_SPELLBOOK;
+            missingCondition = MissingCondition.SPELLBOOK_CONFIRMATION;
         }
         else if (checkCarriedItems && hasRunePouch && !hasSufficientThrallRunes && config.notifyOnMissingRunes())
         {
@@ -261,7 +278,7 @@ public class ConfirmSpellbookPlugin extends Plugin
         // Keep the condition after Confirm, so unrelated inventory updates cannot re-show it.
         boolean rearmAcknowledgedWarning = acknowledgmentNeedsReset && !warningShown;
         acknowledgmentNeedsReset = false;
-        int nextWarningSpellbook = missingCondition == MissingCondition.ARCEUUS_SPELLBOOK ? spellbook : -1;
+        int nextWarningSpellbook = missingCondition == MissingCondition.SPELLBOOK_CONFIRMATION ? spellbook : -1;
         if (missingCondition == currentMissingCondition && nextWarningSpellbook == warningSpellbook
             && !rearmAcknowledgedWarning)
         {
@@ -296,7 +313,7 @@ public class ConfirmSpellbookPlugin extends Plugin
                 return config.notifyOnMissingBook();
             case THRALL_RUNES:
                 return config.notifyOnMissingRunes();
-            case ARCEUUS_SPELLBOOK:
+            case SPELLBOOK_CONFIRMATION:
                 return config.notifyOnWrongSpellbook();
             default:
                 return false;
@@ -312,7 +329,7 @@ public class ConfirmSpellbookPlugin extends Plugin
 
         if (!hasArceuusSpellbook)
         {
-            return MissingCondition.ARCEUUS_SPELLBOOK;
+            return MissingCondition.SPELLBOOK_CONFIRMATION;
         }
 
         if (!hasSufficientThrallRunes)
@@ -330,7 +347,7 @@ public class ConfirmSpellbookPlugin extends Plugin
 
     public String getReminderLongText()
     {
-        if (currentMissingCondition == MissingCondition.ARCEUUS_SPELLBOOK)
+        if (currentMissingCondition == MissingCondition.SPELLBOOK_CONFIRMATION)
         {
             return "Confirm spellbook : " + getSpellbookName();
         }
@@ -339,7 +356,7 @@ public class ConfirmSpellbookPlugin extends Plugin
 
     public String getReminderShortText()
     {
-        if (currentMissingCondition == MissingCondition.ARCEUUS_SPELLBOOK)
+        if (currentMissingCondition == MissingCondition.SPELLBOOK_CONFIRMATION)
         {
             return getSpellbookName() + "!";
         }
@@ -388,6 +405,13 @@ public class ConfirmSpellbookPlugin extends Plugin
                 warningShown = false;
                 acknowledgmentNeedsReset = false;
                 overlay.clearConfirmTarget();
+                if (currentMissingCondition == MissingCondition.SPELLBOOK_CONFIRMATION
+                    && warningSpellbook == ARCEUUS_SPELLBOOK)
+                {
+                    // Confirming the spellbook must not dismiss a separate supply warning.
+                    arceuusSpellbookConfirmed = true;
+                    evaluateWarningState();
+                }
             }
         });
     }
@@ -398,6 +422,7 @@ public class ConfirmSpellbookPlugin extends Plugin
         hasRunePouch = false;
         carriedItemsKnown = false;
         acknowledgmentNeedsReset = false;
+        arceuusSpellbookConfirmed = false;
         warningShown = false;
         currentMissingCondition = MissingCondition.NONE;
         warningSpellbook = -1;

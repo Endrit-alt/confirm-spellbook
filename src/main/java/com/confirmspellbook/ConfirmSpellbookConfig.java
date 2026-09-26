@@ -76,8 +76,8 @@ public interface ConfirmSpellbookConfig extends Config
 
     @ConfigItem(
         keyName = "notifyOnWrongSpellbook",
-        name = "Notify on Wrong Spellbook",
-        description = "Show reminder when not on Arceuus spellbook",
+        name = "Spellbook Confirmation",
+        description = "Ask you to confirm your spellbook; carrying the Book of the Dead already confirms Arceuus",
         position = 2,
         section = notificationConditionsSection
     )
@@ -89,7 +89,7 @@ public interface ConfirmSpellbookConfig extends Config
     @ConfigItem(
         keyName = "checkCarriedRunePouch",
         name = "Check Carried Book or Pouch",
-        description = "Confirm your current non-Arceuus spellbook when carrying the Book of the Dead or a rune pouch; on Arceuus, a carried pouch warns about insufficient thrall runes even without the book",
+        description = "A carried pouch prompts on any spellbook; the Book of the Dead skips confirmation on Arceuus. Thrall supply reminders still apply",
         position = 3,
         section = notificationConditionsSection
     )
