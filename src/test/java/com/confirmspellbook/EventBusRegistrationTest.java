@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import net.runelite.client.eventbus.EventBus;
 import org.junit.Test;
@@ -12,6 +12,6 @@ public class EventBusRegistrationTest
 	@Test
 	public void subscribersRegister()
 	{
-		new EventBus().register(new BookOfTheDeadNotifierPlugin());
+		new EventBus().register(new ConfirmSpellbookPlugin());
 	}
 }

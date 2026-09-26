@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import net.runelite.api.Client;
 import net.runelite.api.EnumComposition;

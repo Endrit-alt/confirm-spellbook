@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
@@ -29,9 +29,9 @@ import net.runelite.client.util.HotkeyListener;
 @PluginDescriptor(
     name = "Confirm Spellbook",
     description = "Confirm your spellbook when carrying a thrall book or rune pouch, and check for missing thrall supplies",
-    tags = {"endrit", "confirm", "ancients", "standard", "lunar", "arceuus", "thrall", "thralls", "book of the dead", "spell", "spellbook", "reminder", "necromancy", "resurrect", "ghost", "skeleton", "zombie", "rune", "runes", "lesser", "superior", "greater", "casts", "air", "earth", "fire", "mind", "death", "blood", "cosmic", "staff", "tome", "rune pouch"}
+    tags = {"confirm", "spellbook", "ancient", "ancients", "ancient magicks", "standard", "lunar", "arceuus", "thrall", "thralls", "book of the dead", "rune pouch", "runes", "magic", "reminder", "warning", "loadout", "endrit"}
 )
-public class BookOfTheDeadNotifierPlugin extends Plugin
+public class ConfirmSpellbookPlugin extends Plugin
 {
     private static final int ARCEUUS_SPELLBOOK = 3;
 
@@ -39,13 +39,13 @@ public class BookOfTheDeadNotifierPlugin extends Plugin
     private Client client;
 
     @Inject
-    private BookOfTheDeadNotifierConfig config;
+    private ConfirmSpellbookConfig config;
 
     @Inject
     private OverlayManager overlayManager;
 
     @Inject
-    private BookOfTheDeadNotifierOverlay overlay;
+    private ConfirmSpellbookOverlay overlay;
 
     @Inject
     private Notifier notifier;
@@ -176,7 +176,7 @@ public class BookOfTheDeadNotifierPlugin extends Plugin
     @Subscribe
     public void onConfigChanged(ConfigChanged event)
     {
-        if (!BookOfTheDeadNotifierConfig.GROUP.equals(event.getGroup()))
+        if (!ConfirmSpellbookConfig.GROUP.equals(event.getGroup()))
         {
             return;
         }
@@ -412,8 +412,8 @@ public class BookOfTheDeadNotifierPlugin extends Plugin
     }
 
     @Provides
-    BookOfTheDeadNotifierConfig provideConfig(ConfigManager configManager)
+    ConfirmSpellbookConfig provideConfig(ConfigManager configManager)
     {
-        return configManager.getConfig(BookOfTheDeadNotifierConfig.class);
+        return configManager.getConfig(ConfirmSpellbookConfig.class);
     }
 }

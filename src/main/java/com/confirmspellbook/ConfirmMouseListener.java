@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import java.awt.event.MouseEvent;
 import javax.inject.Inject;
@@ -7,11 +7,11 @@ import net.runelite.client.input.MouseAdapter;
 /** Consumes the entire Confirm click so it cannot also interact with the game underneath. */
 public class ConfirmMouseListener extends MouseAdapter
 {
-    private final BookOfTheDeadNotifierOverlay overlay;
+    private final ConfirmSpellbookOverlay overlay;
     private boolean confirming;
 
     @Inject
-    ConfirmMouseListener(BookOfTheDeadNotifierOverlay overlay)
+    ConfirmMouseListener(ConfirmSpellbookOverlay overlay)
     {
         this.overlay = overlay;
     }

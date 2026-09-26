@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -25,9 +25,9 @@ import static org.mockito.Mockito.*;
 public class ConfirmOverlayTest
 {
     private final Client client = mock(Client.class);
-    private final BookOfTheDeadNotifierPlugin plugin = mock(BookOfTheDeadNotifierPlugin.class);
-    private final BookOfTheDeadNotifierConfig config = spy(new BookOfTheDeadNotifierConfig() {});
-    private BookOfTheDeadNotifierOverlay overlay;
+    private final ConfirmSpellbookPlugin plugin = mock(ConfirmSpellbookPlugin.class);
+    private final ConfirmSpellbookConfig config = spy(new ConfirmSpellbookConfig() {});
+    private ConfirmSpellbookOverlay overlay;
     private ConfirmMouseListener listener;
     private final Canvas canvas = new Canvas();
 
@@ -47,11 +47,11 @@ public class ConfirmOverlayTest
             protected void configure()
             {
                 bind(Client.class).toInstance(client);
-                bind(BookOfTheDeadNotifierPlugin.class).toProvider(() -> plugin);
-                bind(BookOfTheDeadNotifierConfig.class).toInstance(config);
+                bind(ConfirmSpellbookPlugin.class).toProvider(() -> plugin);
+                bind(ConfirmSpellbookConfig.class).toInstance(config);
             }
         });
-        overlay = injector.getInstance(BookOfTheDeadNotifierOverlay.class);
+        overlay = injector.getInstance(ConfirmSpellbookOverlay.class);
         listener = injector.getInstance(ConfirmMouseListener.class);
     }
 
@@ -104,11 +104,11 @@ public class ConfirmOverlayTest
     {
         Point oldButton = render("confirm-long");
         overlay.getBounds().setLocation(350, 150);
-        when(config.reminderStyle()).thenReturn(BookOfTheDeadNotifierStyle.SHORT_TEXT);
+        when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.SHORT_TEXT);
         Point newButton = render("confirm-short");
         assertFalse(overlay.confirmAt(oldButton));
         assertTrue(overlay.confirmAt(newButton));
-        when(config.reminderStyle()).thenReturn(BookOfTheDeadNotifierStyle.CUSTOM_TEXT);
+        when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.CUSTOM_TEXT);
         when(config.customText()).thenReturn("<col=ffff00>Check your thrall supplies!</col>");
         assertTrue(overlay.confirmAt(render("confirm-custom")));
         when(config.customText()).thenReturn("");
@@ -145,10 +145,10 @@ public class ConfirmOverlayTest
             assertFalse(listener.mousePressed(event(MouseEvent.MOUSE_PRESSED, oldButton, 0, MouseEvent.BUTTON1)).isConsumed());
             assertFalse(listener.mousePressed(event(MouseEvent.MOUSE_PRESSED, warning, 0, MouseEvent.BUTTON1)).isConsumed());
         }
-        when(config.reminderStyle()).thenReturn(BookOfTheDeadNotifierStyle.SHORT_TEXT);
+        when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.SHORT_TEXT);
         when(plugin.getReminderShortText()).thenReturn("Runes!");
         assertFalse(overlay.confirmAt(render("warning-runes-short")));
-        when(config.reminderStyle()).thenReturn(BookOfTheDeadNotifierStyle.CUSTOM_TEXT);
+        when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.CUSTOM_TEXT);
         when(config.customText()).thenReturn("Confirm spellbook : Ancients");
         assertFalse(overlay.confirmAt(render("warning-custom-no-button")));
         verify(plugin, never()).confirmWarning(anyLong());
@@ -167,7 +167,7 @@ public class ConfirmOverlayTest
         assertTrue(overlay.confirmAt(render("confirm-standard")));
         when(plugin.getReminderLongText()).thenReturn("Confirm spellbook : Lunar");
         assertTrue(overlay.confirmAt(render("confirm-lunar")));
-        when(config.reminderStyle()).thenReturn(BookOfTheDeadNotifierStyle.SHORT_TEXT);
+        when(config.reminderStyle()).thenReturn(ConfirmSpellbookStyle.SHORT_TEXT);
         when(plugin.getReminderShortText()).thenReturn("Ancients!");
         render("confirm-ancients-short");
         when(plugin.getReminderShortText()).thenReturn("Standard!");

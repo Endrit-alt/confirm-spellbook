@@ -1,12 +1,12 @@
 # Confirm Spellbook
 
+![Confirm Spellbook icon](icon.png)
+
 A RuneLite plugin by **Endrit** that asks you to confirm your spellbook and reminds you about missing thrall supplies.
 
-This is [Endrit-alt's fork](https://github.com/Endrit-alt/book-of-the-dead-reminder) of
-[Jake's plugin](https://github.com/jakevollkommer/book-of-the-dead-reminder), based on
-Plugin Hub revision `90eee3bdd863159b9f30473eaca35c68304898ac`. Confirm Spellbook is maintained independently; the original BSD license and Jake's copyright notice are retained.
+Source: [Endrit's Confirm Spellbook repository](https://github.com/Endrit-alt/confirm-spellbook).
 
-### Changes in this fork
+### How it works
 
 - **Confirm button** only on Ancients, Standard, and Lunar spellbook warnings, to acknowledge an intentional spellbook choice. Missing-book and missing-rune warnings have no button. The existing hide hotkey can still dismiss any warning.
 - **Persistent acknowledgment**: unrelated inventory updates, rune-count changes, and visual setting changes do not bring back the same warning or repeat its notification. Banking and withdrawing **either the book or the pouch independently** resets confirmation if the warning still applies, including deposit/withdraw transitions reported before the next game tick. A warning also returns after its condition clears and recurs, when a different requirement becomes the warning, when the spellbook being confirmed changes, after logout/world hopping, or after restarting the plugin.
@@ -83,7 +83,7 @@ Use JDK 11 or newer. On Windows:
 .\gradlew.bat runPlugin
 ```
 
-On macOS/Linux, use `./gradlew` instead. `runPlugin` starts a developer RuneLite client with Confirm Spellbook loaded; disable the original Plugin Hub copy in that client to avoid duplicate reminders. The built JAR is `build/libs/confirm-spellbook-1.2.1.jar`. It is not a standalone application or automatically installed into your regular RuneLite client. Confirm Spellbook has not been submitted to the Plugin Hub.
+On macOS/Linux, use `./gradlew` instead. `runPlugin` starts a developer RuneLite client with Confirm Spellbook loaded; disable the original Plugin Hub copy in that client to avoid duplicate reminders. The built JAR is `build/libs/confirm-spellbook-1.2.1.jar`. It is not a standalone application or automatically installed into your regular RuneLite client. Plugin Hub installation will be available after RuneLite approves the submission.
 
 ## Review and possible next features
 

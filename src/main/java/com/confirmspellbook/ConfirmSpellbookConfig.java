@@ -1,13 +1,13 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import net.runelite.client.config.*;
 
 import java.awt.*;
 
-@ConfigGroup(BookOfTheDeadNotifierConfig.GROUP)
-public interface BookOfTheDeadNotifierConfig extends Config
+@ConfigGroup(ConfirmSpellbookConfig.GROUP)
+public interface ConfirmSpellbookConfig extends Config
 {
-	String GROUP = "bookofthedeadreminder";
+	String GROUP = "confirmspellbook";
 
     @ConfigItem(
         keyName = "reminderStyle",
@@ -15,9 +15,9 @@ public interface BookOfTheDeadNotifierConfig extends Config
         description = "The style of reminder text to display",
         position = 0
     )
-    default BookOfTheDeadNotifierStyle reminderStyle()
+    default ConfirmSpellbookStyle reminderStyle()
     {
-        return BookOfTheDeadNotifierStyle.LONG_TEXT;
+        return ConfirmSpellbookStyle.LONG_TEXT;
     }
 
     @ConfigItem(

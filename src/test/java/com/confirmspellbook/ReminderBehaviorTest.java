@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -38,12 +38,12 @@ public class ReminderBehaviorTest
     @Mock private Notifier notifier;
     @Mock private ClientThread clientThread;
     @Mock private OverlayManager overlayManager;
-    @Mock private BookOfTheDeadNotifierOverlay overlay;
+    @Mock private ConfirmSpellbookOverlay overlay;
     @Mock private KeyManager keyManager;
     @Mock private MouseManager mouseManager;
     @Mock private ConfirmMouseListener confirmMouseListener;
-    @Spy private BookOfTheDeadNotifierConfig config = new BookOfTheDeadNotifierConfig() {};
-    @InjectMocks private BookOfTheDeadNotifierPlugin plugin;
+    @Spy private ConfirmSpellbookConfig config = new ConfirmSpellbookConfig() {};
+    @InjectMocks private ConfirmSpellbookPlugin plugin;
     private boolean bookPresent = true;
     private boolean pouchPresent;
     private int suppliedCasts = 10;

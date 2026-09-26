@@ -27,7 +27,7 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
-group = 'com.bookofthedeadnotifier'
+group = 'com.confirmspellbook'
 version = '1.2.1'
 
 tasks.withType(JavaCompile).configureEach {
@@ -39,7 +39,7 @@ tasks.register('runPlugin', JavaExec) {
 	group = 'application'
 	description = 'Run RuneLite with the plugin loaded'
 	classpath = sourceSets.test.runtimeClasspath
-	mainClass = 'com.bookofthedeadnotifier.PluginLauncher'
+	mainClass = 'com.confirmspellbook.PluginLauncher'
 	jvmArgs = [
 		'-ea',
 		'--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED',

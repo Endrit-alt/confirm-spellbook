@@ -1,4 +1,4 @@
-package com.bookofthedeadnotifier;
+package com.confirmspellbook;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -20,7 +20,7 @@ import net.runelite.client.ui.overlay.components.TextComponent;
 import net.runelite.client.util.Text;
 
 @Singleton
-public class BookOfTheDeadNotifierOverlay extends Overlay
+public class ConfirmSpellbookOverlay extends Overlay
 {
     private static final int PADDING = 6;
     private static final int BUTTON_GAP = 12;
@@ -29,14 +29,14 @@ public class BookOfTheDeadNotifierOverlay extends Overlay
     private static final BasicStroke BUTTON_BORDER_STROKE = new BasicStroke(0.5f);
 
     private final Client client;
-    private final BookOfTheDeadNotifierPlugin plugin;
-    private final BookOfTheDeadNotifierConfig config;
+    private final ConfirmSpellbookPlugin plugin;
+    private final ConfirmSpellbookConfig config;
 
     // Publish bounds and warning identity together, from the renderer to the AWT mouse listener.
     private volatile ConfirmTarget confirmTarget;
 
     @Inject
-    BookOfTheDeadNotifierOverlay(Client client, BookOfTheDeadNotifierPlugin plugin, BookOfTheDeadNotifierConfig config)
+    ConfirmSpellbookOverlay(Client client, ConfirmSpellbookPlugin plugin, ConfirmSpellbookConfig config)
     {
         super(plugin);
         this.client = client;
