@@ -61,7 +61,7 @@ public class ConfirmSpellbookOverlay extends Overlay
         int buttonWidth = metrics.stringWidth(CONFIRM_TEXT) + PADDING * 2;
         int height = metrics.getHeight() + PADDING * 2;
         int buttonX = PADDING + textWidth + BUTTON_GAP;
-        boolean showConfirm = plugin.getCurrentMissingCondition() == MissingCondition.SPELLBOOK_CONFIRMATION;
+        boolean showConfirm = plugin.shouldShowConfirmButton();
         int width = showConfirm ? buttonX + buttonWidth + 2 : textWidth + PADDING * 2;
 
         Color reminderColor = config.reminderColor();
@@ -122,7 +122,7 @@ public class ConfirmSpellbookOverlay extends Overlay
     {
         ConfirmTarget target = confirmTarget;
         if (target == null || !plugin.shouldShowWarning()
-            || plugin.getCurrentMissingCondition() != MissingCondition.SPELLBOOK_CONFIRMATION
+            || !plugin.shouldShowConfirmButton()
             || client.getGameState() != GameState.LOGGED_IN
             || client.isMenuOpen() || !target.bounds.contains(point))
         {

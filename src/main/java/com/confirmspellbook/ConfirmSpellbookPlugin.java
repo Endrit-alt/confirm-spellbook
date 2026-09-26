@@ -71,7 +71,7 @@ public class ConfirmSpellbookPlugin extends Plugin
     private boolean hasRunePouch = false;
     private boolean carriedItemsKnown = false;
     private boolean acknowledgmentNeedsReset = false;
-    private boolean arceuusSpellbookConfirmed = false;
+    private volatile boolean arceuusSpellbookConfirmed = false;
     private int spellbook = -1;
     private int warningSpellbook = -1;
     private volatile boolean warningShown = false;
@@ -370,7 +370,7 @@ public class ConfirmSpellbookPlugin extends Plugin
             return;
         }
 
-        notifier.notify(config.notification(), "Confirm Spellbook: " + getReminderLongText());
+        notifier.notify(config.notification(), getReminderLongText());
     }
 
     public long getWarningVersion()
@@ -434,6 +434,12 @@ public class ConfirmSpellbookPlugin extends Plugin
     public boolean shouldShowWarning()
     {
         return warningShown;
+    }
+
+    public boolean shouldShowConfirmButton()
+    {
+        return warningShown && (currentMissingCondition == MissingCondition.SPELLBOOK_CONFIRMATION
+            || (currentMissingCondition == MissingCondition.BOOK_OF_THE_DEAD && arceuusSpellbookConfirmed));
     }
 
     @Provides
