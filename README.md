@@ -2,6 +2,6 @@
 
 ![Confirm Spellbook icon](icon.png)
 
-Asks you to confirm your spellbook when you take out a rune pouch. Carrying the Book of the Dead already confirms Arceuus; on other spellbooks, the book also triggers a confirmation.
+Checks start when you withdraw a rune pouch or the Book of the Dead from the bank. Login and world hopping stay quiet. Carrying the book already confirms Arceuus; otherwise, you are asked to confirm your spellbook.
 
 On Arceuus, reminds you about a missing thrall book or missing thrall runes. After confirming Arceuus, you can also confirm the missing-book warning if you plan to use other spells.

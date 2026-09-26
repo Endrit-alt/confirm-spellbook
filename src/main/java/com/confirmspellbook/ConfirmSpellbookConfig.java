@@ -17,7 +17,7 @@ public interface ConfirmSpellbookConfig extends Config
     )
     default ConfirmSpellbookStyle reminderStyle()
     {
-        return ConfirmSpellbookStyle.LONG_TEXT;
+        return ConfirmSpellbookStyle.SHORT_TEXT;
     }
 
     @ConfigItem(
@@ -89,7 +89,7 @@ public interface ConfirmSpellbookConfig extends Config
     @ConfigItem(
         keyName = "checkCarriedRunePouch",
         name = "Check Carried Book or Pouch",
-        description = "A carried pouch prompts on any spellbook; the Book of the Dead skips confirmation on Arceuus. Thrall supply reminders still apply",
+        description = "After withdrawing a book or pouch from the bank, a carried pouch prompts on any spellbook; the book skips confirmation on Arceuus. Login and world hopping stay quiet",
         position = 3,
         section = notificationConditionsSection
     )
@@ -119,10 +119,22 @@ public interface ConfirmSpellbookConfig extends Config
     }
 
     @ConfigItem(
+        keyName = "chatNotificationColor",
+        name = "Chat Notification Color",
+        description = "Text color for new reminder messages in the chatbox",
+        position = 1,
+        section = displaySection
+    )
+    default Color chatNotificationColor()
+    {
+        return Color.RED;
+    }
+
+    @ConfigItem(
         keyName = "flashReminderBox",
         name = "Flash the Reminder Box",
         description = "Makes the reminder box flash between two colors",
-        position = 1,
+        position = 2,
         section = displaySection
     )
     default boolean flashReminderBox()
@@ -135,7 +147,7 @@ public interface ConfirmSpellbookConfig extends Config
         keyName = "reminderColor",
         name = "Color",
         description = "Main color for the reminder box",
-        position = 2,
+        position = 3,
         section = displaySection
     )
     default Color reminderColor()
@@ -148,7 +160,7 @@ public interface ConfirmSpellbookConfig extends Config
         keyName = "flashColor",
         name = "Flash Color",
         description = "Secondary color to flash between (if flashing enabled)",
-        position = 3,
+        position = 4,
         section = displaySection
     )
     default Color flashColor()

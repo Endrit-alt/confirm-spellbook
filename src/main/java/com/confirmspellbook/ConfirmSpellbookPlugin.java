@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Skill;
@@ -12,23 +13,31 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarbitID;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.Notifier;
+import net.runelite.client.chat.ChatMessageBuilder;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.config.Notification;
+import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.HotkeyListener;
 
 @Slf4j
 @PluginDescriptor(
     name = "Confirm Spellbook",
-    description = "Confirm your spellbook when carrying a thrall book or rune pouch, and check for missing thrall supplies",
+    description = "Confirm your spellbook after bank withdrawals and check for missing thrall supplies",
     tags = {"confirm", "spellbook", "ancient", "ancients", "ancient magicks", "standard", "lunar", "arceuus", "thrall", "thralls", "book of the dead", "rune pouch", "runes", "magic", "reminder", "warning", "loadout", "endrit"}
 )
 public class ConfirmSpellbookPlugin extends Plugin
@@ -51,6 +60,15 @@ public class ConfirmSpellbookPlugin extends Plugin
     private Notifier notifier;
 
     @Inject
+    private ChatMessageManager chatMessageManager;
+
+    @Inject
+    private RuneLiteConfig runeLiteConfig;
+
+    @Inject
+    private ClientUI clientUI;
+
+    @Inject
     private KeyManager keyManager;
 
     @Inject
@@ -70,6 +88,7 @@ public class ConfirmSpellbookPlugin extends Plugin
     private boolean hasBookOfTheDead = false;
     private boolean hasRunePouch = false;
     private boolean carriedItemsKnown = false;
+    private boolean checksArmed = false;
     private boolean acknowledgmentNeedsReset = false;
     private volatile boolean arceuusSpellbookConfirmed = false;
     private int spellbook = -1;
@@ -143,7 +162,8 @@ public class ConfirmSpellbookPlugin extends Plugin
             stateDirty = true;
         }
         else if (event.getGameState() == GameState.LOGIN_SCREEN
-            || event.getGameState() == GameState.HOPPING)
+            || event.getGameState() == GameState.HOPPING
+            || event.getGameState() == GameState.CONNECTION_LOST)
         {
             clearWarning();
         }
@@ -157,7 +177,7 @@ public class ConfirmSpellbookPlugin extends Plugin
             if (active && client.getGameState() == GameState.LOGGED_IN)
             {
                 // Preserve item transitions even when deposit and withdrawal occur before the next tick.
-                checkCarriedItems(loadout.carriedItems());
+                checkCarriedItems(loadout.carriedItems(), true);
             }
             stateDirty = true;
         }
@@ -193,11 +213,17 @@ public class ConfirmSpellbookPlugin extends Plugin
         }
 
         stateDirty = false;
+        if (!checksArmed)
+        {
+            // Login/startup only establishes what is already carried, without reading pouch runes.
+            checkCarriedItems(loadout.carriedItems(), false);
+            return;
+        }
         magicLevel = client.getRealSkillLevel(Skill.MAGIC);
         checkSpellbook();
         PlayerLoadout.Snapshot snapshot = loadout.snapshot();
         checkThrallRunes(snapshot);
-        checkCarriedItems(snapshot.getCarriedItems());
+        checkCarriedItems(snapshot.getCarriedItems(), false);
         evaluateWarningState();
     }
 
@@ -224,12 +250,17 @@ public class ConfirmSpellbookPlugin extends Plugin
         hasSufficientThrallRunes = snapshot.castsAvailable(tier) >= 1;
     }
 
-    private void checkCarriedItems(PlayerLoadout.CarriedItems carriedItems)
+    private void checkCarriedItems(PlayerLoadout.CarriedItems carriedItems, boolean containerEvent)
     {
         boolean bookPresent = carriedItems.hasBookOfTheDead();
         boolean pouchPresent = carriedItems.hasRunePouch();
         if (carriedItemsKnown && ((!hasBookOfTheDead && bookPresent) || (!hasRunePouch && pouchPresent)))
         {
+            if (!checksArmed && containerEvent)
+            {
+                Widget bank = client.getWidget(InterfaceID.Bankmain.ITEMS);
+                checksArmed = bank != null && !bank.isHidden();
+            }
             acknowledgmentNeedsReset = true;
             arceuusSpellbookConfirmed = false;
             // A click queued for the previous loadout must not acknowledge the new one.
@@ -365,12 +396,36 @@ public class ConfirmSpellbookPlugin extends Plugin
 
     private void sendNotification()
     {
-        if (!config.notification().isEnabled())
+        Notification notification = config.notification();
+        if (!notification.isEnabled())
         {
             return;
         }
 
-        notifier.notify(config.notification(), getReminderLongText());
+        if (!notification.isOverride() || !notification.isInitialized())
+        {
+            // Resolve inherited settings before disabling the default chat copy.
+            notification = new Notification(true, true, true,
+                runeLiteConfig.enableTrayNotifications(), notification.getTrayIconType(),
+                runeLiteConfig.notificationRequestFocus(), runeLiteConfig.notificationSound(), null,
+                runeLiteConfig.notificationVolume(), runeLiteConfig.notificationTimeout(),
+                runeLiteConfig.enableGameMessageNotification(), runeLiteConfig.flashNotification(),
+                runeLiteConfig.notificationFlashColor(), runeLiteConfig.sendNotificationsWhenFocused());
+        }
+
+        String message = getReminderLongText();
+        // Check focus before Notifier can bring the game window to the foreground.
+        boolean sendChat = notification.isGameMessage() && client.getGameState() == GameState.LOGGED_IN
+            && (notification.isSendWhenFocused() || !clientUI.isFocused());
+        notifier.notify(notification.withGameMessage(false), message);
+        if (sendChat)
+        {
+            chatMessageManager.queue(QueuedMessage.builder()
+                .type(ChatMessageType.CONSOLE)
+                .runeLiteFormattedMessage(new ChatMessageBuilder()
+                    .append(config.chatNotificationColor(), message).build())
+                .build());
+        }
     }
 
     public long getWarningVersion()
@@ -421,6 +476,7 @@ public class ConfirmSpellbookPlugin extends Plugin
         hasBookOfTheDead = false;
         hasRunePouch = false;
         carriedItemsKnown = false;
+        checksArmed = false;
         acknowledgmentNeedsReset = false;
         arceuusSpellbookConfirmed = false;
         warningShown = false;
