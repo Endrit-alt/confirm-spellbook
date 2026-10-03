@@ -495,6 +495,7 @@ public class ConfirmSpellbookPlugin extends Plugin
     public boolean shouldShowConfirmButton()
     {
         return warningShown && (currentMissingCondition == MissingCondition.SPELLBOOK_CONFIRMATION
+            || currentMissingCondition == MissingCondition.THRALL_RUNES
             || (currentMissingCondition == MissingCondition.BOOK_OF_THE_DEAD && arceuusSpellbookConfirmed));
     }
 
